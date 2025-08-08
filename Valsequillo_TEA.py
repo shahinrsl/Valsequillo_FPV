@@ -8,7 +8,7 @@ import numpy_financial as npf
 
 # Load locations data
 locations = pd.read_csv("valsequillo_fpv_TEA.csv", encoding='latin1')
-PVsystemconfig = 'LPV' # LPV or FPV
+PVsystemconfig = 'FPV' # LPV or FPV
 
 # Initialize new columns for results
 base_year = 2022
@@ -524,7 +524,7 @@ params = {
             'label': 'OPEX [USD/kW/year]', 'color': 'orange', 'type': 'opex'},
     'land_cost': {'values': np.linspace((1-sensitivity_range)*land_price, (1+sensitivity_range)*land_price, 20),
                  'label': 'Land Cost [USD]', 'color': 'brown', 'type': 'capex'},
-    'energy_price_cf': {'values': np.linspace(1-sensitivity_range, 1+sensitivity_range, 20),
+    'energy_price_multiplier': {'values': np.linspace(1-sensitivity_range, 1+sensitivity_range, 20),
                        'label': 'Energy Price Multiplier', 'color': 'pink', 'type': 'financial'},
     'cel_price': {'values': np.linspace((1-sensitivity_range)*cel_price, (1+sensitivity_range)*cel_price, 20),
                  'label': 'CEL Price [USD/CEL]', 'color': 'cyan', 'type': 'financial'},
@@ -556,7 +556,7 @@ for param, config in params.items():
         current_opex = Valsequillo_opex
 
         
-        if param == 'energy_price_cf':
+        if param == 'energy_price_multiplier':
             current_prices['Price'] *= value
         elif param == 'cel_price':
             current_cel_price = value
@@ -648,7 +648,7 @@ import matplotlib.pyplot as plt
 
 param_order = [
     'module', 'bos_hardware', 'installation', 'soft_costs',
-    'opex', 'land_cost','discount_rate','energy_price_cf', 'cel_price', 'cel_rate']
+    'opex', 'land_cost','discount_rate','energy_price_multiplier', 'cel_price', 'cel_rate']
 
 # Plotting function
 def plot_tornado(ax, metric_name, results, baseline):
@@ -748,7 +748,7 @@ other_inputs = pd.DataFrame({
     'discount_rate [%]': [discount_rate * 100],
     'cel_price [USD/CEL]': [cel_price],
     'cel_rate [CEL/MWh]': [cel_rate],
-    'energy_price_cf': [1.0]  
+    'energy_price_multiplier': [1.0]  
 }).T.rename(columns={0: 'Most_Likely'})
 
 
@@ -757,7 +757,7 @@ other_inputs['Max'] = other_inputs['Most_Likely']
 
 
 other_inputs.loc['land_price [USD/ha]', ['Min', 'Max']] *= [1 - sensitivity_range, 1 + sensitivity_range]
-other_inputs.loc['energy_price_cf', ['Min', 'Max']] *= [1 - sensitivity_range, 1 + sensitivity_range]
+other_inputs.loc['energy_price_multiplier', ['Min', 'Max']] *= [1 - sensitivity_range, 1 + sensitivity_range]
 other_inputs.loc['cel_rate [CEL/MWh]', ['Min', 'Max']] *= [1 - sensitivity_range, 1 + sensitivity_range]
 other_inputs.loc['cel_price [USD/CEL]', ['Min', 'Max']] *= [1 - sensitivity_range, 1 + sensitivity_range]
 other_inputs.loc['OPEX [USD/kW]', ['Min', 'Max']] = [opex_lower, opex_upper]
@@ -799,7 +799,7 @@ for i in range(num_simulations):
     deg_i = degradation_rate
     cel_price_i = MC_samples['cel_price [USD/CEL]'][i]
     cel_rate_i = MC_samples['cel_rate [CEL/MWh]'][i]
-    price_cf_i = MC_samples['energy_price_cf'][i]
+    price_m_i = MC_samples['energy_price_multiplier'][i]
     degraded_hourly = []
     for year in range(1, operation_period + 1):
         degradation_factor = (1 - deg_i) ** (year - 1)
@@ -811,7 +811,7 @@ for i in range(num_simulations):
 
     
     adjusted_prices = full_hourly_prices.copy()
-    adjusted_prices['Price'] *= price_cf_i
+    adjusted_prices['Price'] *= price_m_i
 
    
     cost_i = costflow(capex_i, opex_i, Valsequillo_inverter_cost, land_i)
@@ -888,7 +888,7 @@ MCinputs_df = pd.DataFrame({
     'Soft Costs': MC_samples['Soft costs'],
     'OPEX': MC_samples['OPEX [USD/kW]'],
     'Land Cost': MC_samples['land_price [USD/ha]'],
-    'Energy Price CF': MC_samples['energy_price_cf'],
+    'Energy Price Multiplier': MC_samples['energy_price_multiplier'],
     'CEL Price': MC_samples['cel_price [USD/CEL]'],
     'CEL Rate': MC_samples['cel_rate [CEL/MWh]'],
     'discount Rate': MC_samples['discount_rate [%]'],
