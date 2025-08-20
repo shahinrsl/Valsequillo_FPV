@@ -1,5 +1,5 @@
 # Valsequillo_FPV
-This repository is for comparative techno-economic analysis of Floating Photovoltaic (FPV) system versus Land-mounted Photovoltaics (LPV). developed for Valsequillo Dam, Puebla, Mexico
+This repository is for comparative techno-economic analysis of the Floating Photovoltaic (FPV) system versus the Land-mounted Photovoltaics (LPV). developed for Valsequillo Dam, Puebla, Mexico
 
 Vlasequillo_TEA.py file provides Net Present Value (NPV), Internal Rate of Return (IRR), Discounted Payback Period (DPBP), and Levelized Cost of Electricity (LCOE) for:
 A) Baseline scenario 
